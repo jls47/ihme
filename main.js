@@ -1,3 +1,13 @@
-d3.csv("./ihme.csv", function(data){
-	console.log(data[0]);
+$(document).ready(function(){
+	$.ajax({
+		type: "GET",
+		url: 'ihme.csv',
+		dataType: 'text',
+		success: function(data){processData(data);}
+	});
 });
+
+function processData(data){
+	var lines = data.split(/\r\n|\n/);
+	console.log(lines);
+}
