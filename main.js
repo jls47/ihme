@@ -1,20 +1,19 @@
-
-
-var processed = [];
 $(document).ready(function(){
+	var processed = [];
 	$.ajax({
 		type: "GET",
 		url: 'https://raw.githubusercontent.com/jls47/ihme/master/ihme.csv',
 		dataType: 'text',
 		success: function(data){
 			processed = processData(data);
-			drawData(processed);
+			drawLevels(processed);
 		}
 	});
 });
 //Sunburst with modifiers
 //12 for year, 13 for rate, 3 for country, 2 for deaths, 5 for gender, 
-//on page load, load and parse the csv.  On changing the parameters and pressing submit, use the 
+//on page load, load and parse the csv.  On changing the parameters and pressing submit, use the function to redraw.  Animate?
+//split by gender in a second level?  How to parse?  OH!  The drawing by gender is already there!  How to dynamically set conditions?
 function processData(data){
 	var lines = data.split(/\r\n|\n/);
 	lines.shift();
@@ -25,7 +24,6 @@ function processData(data){
 		newline = line.split(',');
 		entries.push(newline);
 	})
-	console.log(entries);
 	return entries;
 
 	
@@ -35,15 +33,14 @@ const bubblesort = function(toBeSorted){
 	sorting = true;
 	while(sorting == true){
 		let swaps = 0;
-		for(let i = 0; i < toBeSorted.length - 1; i++){
-			if(toBeSorted[i][13] > toBeSorted[i+1][13]){
+		for(let i = 0; i < toBeSorted.length -1; i++){
+			if(parseFloat(toBeSorted[i][13]) > parseFloat(toBeSorted[i+1][13])){
 				let h = toBeSorted[i+1];
 				toBeSorted[i+1] = toBeSorted[i];
 				toBeSorted[i] = h;
 				swaps += 1;
 			}
 		}
-		console.log(swaps);
 		if(swaps == 0){
 			sorting = false;
 		}
@@ -52,7 +49,7 @@ const bubblesort = function(toBeSorted){
 	return [toBeSorted[toBeSorted.length - 1], toBeSorted[toBeSorted.length - 2], toBeSorted[toBeSorted.length - 3], toBeSorted[toBeSorted.length - 4], toBeSorted[toBeSorted.length - 5], toBeSorted[toBeSorted.length - 6], toBeSorted[toBeSorted.length - 7], toBeSorted[toBeSorted.length - 8], toBeSorted[toBeSorted.length - 9], toBeSorted[toBeSorted.length - 10]];
 }
 
-const drawBurst = function(top10){
+const drawMainBurst = function(top10){
 	let totalRates = 0;
 	for(item in top10){
 		console.log(top10[item][13]);
@@ -87,19 +84,27 @@ const drawBurst = function(top10){
 	}
 }
 
-const drawData = function(entries){
-	let toSort = [];
-
+const drawLevels = function(entries){
+	let mainSort = [];
+	let mSort = [];
+	let fSort = [];
 	for(entry in entries){
 		let item = entries[entry]
-		console.log(entries[entry])
-		if(parseInt(item[12]) == 2001 && item[5] == "Female"){
-			toSort.push(item);
+		if(parseInt(item[12]) == 2017 && item[5] == "Male"){
+			mSort.push(item);
+		}else if(parseInt(item[12]) == 2017 && item[5] == "Female"){
+			fSort.push(item);
+		}else if(parseInt(item[12]) == 2017){
+			mainSort.push(item);
 		}
 	}
-	console.log(toSort);
-	let drawing = bubblesort(toSort);
-	drawBurst(drawing);
+	console.log(mainSort);
+	let mainDrawing = bubblesort(mainSort);
+	console.log(mainDrawing);
+	for(i in mainDrawing){
+
+	}
+	drawMainBurst(mainDrawing);
 	//Time for a bunch of D3!  Do the sunburst but with the top 10 and whatnot.  
 }
 
