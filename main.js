@@ -14,7 +14,10 @@ $(document).ready(function(){
 //12 for year, 13 for rate, 3 for country, 2 for deaths, 5 for gender, 
 //on page load, load and parse the csv.  On changing the parameters and pressing submit, use the function to redraw.  Animate?
 //split by gender in a second level?  How to parse?  OH!  The drawing by gender is already there!  How to dynamically set conditions?
-function processData(data){
+//DIFFERENT METHODS OF SORTING:
+//Gender, country, or year top level?
+//Start with country first to get a handle on things
+const processData = (data) => {
 	var lines = data.split(/\r\n|\n/);
 	lines.shift();
 	lines.pop();
@@ -27,26 +30,6 @@ function processData(data){
 	return entries;
 
 	
-}
-
-const bubblesort = function(toBeSorted){
-	sorting = true;
-	while(sorting == true){
-		let swaps = 0;
-		for(let i = 0; i < toBeSorted.length -1; i++){
-			if(parseFloat(toBeSorted[i][13]) > parseFloat(toBeSorted[i+1][13])){
-				let h = toBeSorted[i+1];
-				toBeSorted[i+1] = toBeSorted[i];
-				toBeSorted[i] = h;
-				swaps += 1;
-			}
-		}
-		if(swaps == 0){
-			sorting = false;
-		}
-	}
-	console.log(toBeSorted);
-	return [toBeSorted[toBeSorted.length - 1], toBeSorted[toBeSorted.length - 2], toBeSorted[toBeSorted.length - 3], toBeSorted[toBeSorted.length - 4], toBeSorted[toBeSorted.length - 5], toBeSorted[toBeSorted.length - 6], toBeSorted[toBeSorted.length - 7], toBeSorted[toBeSorted.length - 8], toBeSorted[toBeSorted.length - 9], toBeSorted[toBeSorted.length - 10]];
 }
 
 const drawMainBurst = function(top10){
@@ -84,7 +67,9 @@ const drawMainBurst = function(top10){
 	}
 }
 
-const drawLevels = function(entries){
+//Starting with a main level of top 10 countries, with sublevels broken down based on gender.
+//array of objects!
+const drawLevels = (entries) => {
 	let mainSort = [];
 	let mSort = [];
 	let fSort = [];
@@ -98,13 +83,35 @@ const drawLevels = function(entries){
 			mainSort.push(item);
 		}
 	}
+	let gSort = genderSort(mSort, fSort);
 	console.log(mainSort);
 	let mainDrawing = bubblesort(mainSort);
-	console.log(mainDrawing);
-	for(i in mainDrawing){
 
-	}
 	drawMainBurst(mainDrawing);
 	//Time for a bunch of D3!  Do the sunburst but with the top 10 and whatnot.  
+}
+
+const genderSort = (mSort, fSort) => {
+	
+}
+
+const bubblesort = (toBeSorted) => {
+	sorting = true;
+	while(sorting == true){
+		let swaps = 0;
+		for(let i = 0; i < toBeSorted.length -1; i++){
+			if(parseFloat(toBeSorted[i][13]) > parseFloat(toBeSorted[i+1][13])){
+				let h = toBeSorted[i+1];
+				toBeSorted[i+1] = toBeSorted[i];
+				toBeSorted[i] = h;
+				swaps += 1;
+			}
+		}
+		if(swaps == 0){
+			sorting = false;
+		}
+	}
+	console.log(toBeSorted);
+	return [toBeSorted[toBeSorted.length - 1], toBeSorted[toBeSorted.length - 2], toBeSorted[toBeSorted.length - 3], toBeSorted[toBeSorted.length - 4], toBeSorted[toBeSorted.length - 5], toBeSorted[toBeSorted.length - 6], toBeSorted[toBeSorted.length - 7], toBeSorted[toBeSorted.length - 8], toBeSorted[toBeSorted.length - 9], toBeSorted[toBeSorted.length - 10]];
 }
 
