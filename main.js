@@ -1,3 +1,5 @@
+
+
 //Upon loading the document, one must load the csv first.  CSS Spinner or something to be added later.
 $(document).ready(function(){
 	var processed = [];
@@ -8,13 +10,29 @@ $(document).ready(function(){
 		success: function(data){
 			//upon loading the csv, parse it into a big old array!
 			processed = processData(data);
+			console.log(processed);
 			//This will become a click event.  It handles the drawing and everything, and eventually will accept as parameters
 			//input from a couple forms.  There are two primary means of comparison, and each will likely wind up looking
 			//different in the code: starting with gender or country needs different sublevels, but I will try my best
 			//to make the sorting code more universal than not.
-			drawCountryLevels(processed);
 		}
 	});
+	console.log(processed);
+	$('.button').click(function(){
+		if(document.getElementsByTagName('svg').length > 0){
+			document.getElementsByTagName('svg')[0].remove();
+		}
+		let option = $('select.options option:checked').val();
+		let year = $('.year').val();
+		console.log(option + ' ' + year);
+		if(option == "country"){
+			drawCountryLevels(processed, year);
+		}else{
+			drawGenderLevels(processed, year);
+		}
+		
+	});
+
 });
 //Sunburst with modifiers
 //12 for year, 13 for rate, 3 for country, 2 for deaths, 5 for gender
@@ -24,7 +42,8 @@ $(document).ready(function(){
 //Gender, country, or year top level?
 //Start with country/year -> gender to get a handle on things
 //gender/year -> top 5 countries each side?
-//year -> avg rates worldwide?
+//top 10 all around at any time?
+//
 
 
 //hold up.  Instead of just top 10, should I also include the rest of the world?  Stretch goal?
@@ -112,14 +131,15 @@ const drawSecondBurst = (top10g, angles, graph) =>{
 
 //Starting with a main level of top 10 countries, with sublevels broken down based on gender
 //Starts off by sorting by year.
-const drawCountryLevels = (entries) => {
+const drawCountryLevels = (entries, year) => {
+	let regions = {"Asia": {"Eastern Asia":["China","Hong Kong","Japan","Macao","Mongolia","North Korea","South Korea","Taiwan"],"South-Eastern Asia": ["Brunei Darussalam","Cambodia","Indonesia","Laos","Malaysia","Myanmar","Philippines","Singapore","Thailand","Timor-Leste","Vietnam"],"Southern Asia": ["Afghanistan","Bangladesh","Bhutan","India","Iran","Maldives","Nepal","Pakistan","Sri Lanka"],"Western Asia": ["Armenia","Azerbaijan","Bahrain","Georgia","Iraq","Israel","Jordan","Kuwait","Lebanon","Oman","Palestine","Qatar","Saudi Arabia","Syria","Turkey","United Arab Emirates","Yemen"],"Central Asia": ["Kazakhstan","Kyrgyzstan","Tajikistan","Turkmenistan","Uzbekistan"]},"Africa": {"Northern Africa": ["Algeria","Egypt","Libya","Morocco","Sudan","Western Sahara"],"Southern Africa": ["Botswana","French Southern Territories","Lesotho","Namibia","South Africa","Swaziland"],"Middle Africa": ["Angola","Cameroon","Central African Republic","Chad","Congo","Congo (Democratic Republic of the)","Equatorial Guinea","Gabon","South Sudan"],"Eastern Africa": ["British Indian Ocean Territory","Burundi","Comoros","Djibouti","Eritrea","Ethiopia","Kenya","Madagascar","Malawi","Mauritius","Mayotte","Mozambique","Réunion","Rwanda","Seychelles","Somalia","Tanzania","Uganda","Zambia","Zimbabwe"],"Western Africa": ["Benin","Burkina Faso","Cabo Verde","Gambia","Ghana","Guinea","Guinea-Bissau","Côte d'Ivoire","Liberia","Mali","Mauritania","Niger","Nigeria","Saint Helena, Ascension and Tristan da Cunha","Senegal","Sierra Leone","Togo"]},"Americas": {"Caribbean": ["Anguilla","Antigua and Barbuda","Aruba","Bahamas","Barbados","Bonaire, Sint Eustatius and Saba","Virgin Islands (British)","Virgin Islands (U.S.)","Cayman Islands","Cuba","Curaçao","Dominica","Dominican Republic","Grenada","Guadeloupe","Haiti","Jamaica","Martinique","Montserrat","Puerto Rico","Saint Barthélemy","Saint Kitts and Nevis","Saint Lucia","Saint Martin (French part)","Saint Vincent and the Grenadines","Sint Maarten (Dutch part)","Trinidad and Tobago","Turks and Caicos Islands"],"South America": ["Argentina","Bolivia","Chile","Colombia","Ecuador","Falkland Islands","French Guiana","Guyana","Paraguay","Peru","South Georgia and the South Sandwich Islands","Suriname","Uruguay","Venezuela"],"Central America": ["Belize","Costa Rica","El Salvador","Guatemala","Honduras","Nicaragua","Panama"],"North America": ["Bermuda","United States Minor Outlying Islands","Canada","Greenland","Saint Pierre and Miquelon","United States of America"]},"Europe": {"Northern Europe": ["Åland Islands","Denmark","Estonia","Faroe Islands","Finland","Guernsey","Iceland","Ireland","Isle of Man","Jersey","Latvia","Lithuania","Norway","Svalbard and Jan Mayen","Sweden","United Kingdom"],"Southern Europe": ["Albania","Andorra","Bosnia and Herzegovina","Croatia","Cyprus","Gibraltar","Greece","Holy See","Italy","Macedonia","Malta","Montenegro","Portugal","San Marino","Serbia","Slovenia","Spain"],"Eastern Europe": ["Belarus","Bulgaria","Czech Republic","Hungary","Moldova (Republic of)","Poland","Republic of Kosovo","Russian Federation","Slovakia","Ukraine"],"Western Europe": ["Austria","Belgium","France","Germany","Liechtenstein","Luxembourg","Monaco","Netherlands",]},"Oceania": {"Australia and New Zealand": ["Australia","Christmas Island","Cocos (Keeling) Islands","New Zealand","Norfolk Island"],"Polynesia": ["American Samoa","Cook Islands","French Polynesia","Niue","Pitcairn","Samoa","Tokelau","Tonga","Tuvalu","Wallis and Futuna"],"Micronesia": ["Guam","Kiribati","Marshall Islands","Micronesia (Federated States of)","Nauru","Northern Mariana Islands","Palau"],"Melanesia": ["Fiji","New Caledonia","Papua New Guinea","Solomon Islands","Vanuatu"]}};
 	let mainSort = [];
 	let gSort = [];
 	for(entry in entries){
-		let item = entries[entry]
-		if(parseInt(item[12]) == 2017 && item[5] == "Both"){
+		let item = entries[entry];
+		if(parseInt(item[12]) == year && item[5] == "Both"){
 			mainSort.push(item);
-		}else if(parseInt(item[12]) == 2017){
+		}else if(parseInt(item[12]) == year){
 			gSort.push(item);
 		}
 	}

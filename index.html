@@ -8,11 +8,22 @@
     <link rel="stylesheet" type="text/css" href="main.css">
   </head>
   <body>
+    <div class="input">
+      <p>I'd like to see top rates of opiate deaths by 
+        <select class="options">
+          <option value="country">country</option>
+          <option value="gender">gender</option>
+        </select>
+        during the year <input type="text" name="year" class="year">.
+      </p>
+      <button type="button" class="button">Submit</button>
+    </div>
 
   	<div class="graph"></div>
 
   </body>
   <script src="d3.v5.min.js"></script>
   <script src="jquery-min.js"></script>
+  <script type="module" src="countryidentifiers.js"></script>
   <script src="main.js"></script>
  </html>
