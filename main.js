@@ -295,7 +295,7 @@ const drawSubRegionBurst = (main, region, gSort) => {
 	}
 }
 
-const drawCountryBurst = (main, sub, gSort) => {
+const drawCountryBurst = (main, sub, region, gSort) => {
 	if(document.getElementsByTagName('svg').length > 0){
 		document.getElementsByTagName('svg')[0].remove();
 	}
@@ -370,7 +370,7 @@ const drawCountryBurst = (main, sub, gSort) => {
 		}
 		portions[i].onclick = function(){
 			console.log(portions[i].getAttribute("country"));
-			drawGenderBurst2(main, portions[i].getAttribute("country"), sub, gSort);
+			drawGenderBurst2(main, portions[i].getAttribute("country"), sub, region, gSort);
 		}
 	}
 	let button = document.getElementById("goBack");
@@ -380,7 +380,7 @@ const drawCountryBurst = (main, sub, gSort) => {
 
 }
 
-const drawGenderBurst2 = (main, country, sub, gSort) => {
+const drawGenderBurst2 = (main, country, sub, region, gSort) => {
 	if(document.getElementsByTagName('svg').length > 0){
 		document.getElementsByTagName('svg')[0].remove();
 	}
@@ -429,7 +429,7 @@ const drawGenderBurst2 = (main, country, sub, gSort) => {
 	}
 	let button = document.getElementById("goBack");
 	button.onclick = function(){
-		drawCountryBurst(main, sub, gSort);
+		drawCountryBurst(main, sub, region, gSort);
 	}
 	
 }
@@ -457,33 +457,10 @@ const drawCountryLevels = (entries, year, regions, top10) => {
 			gSort.push(item);
 		}
 	}
-
-	
-
-	if(top10 == true){
-		//make a box for "rest of the world"?
-		let graph = d3.select(".graph")
-			.append("svg")
-			.attr("width", "500")
-			.attr("height", "500")
-			.append("g")
-			.attr("transform", "translate(250,250)")
-			.attr("class", "circle");
-
-		let mainDrawing = bubblesort(mainSort, true);
-		let gDrawing = genderSort(gSort, mainDrawing);
-		let countryAngles = drawTop10Burst(mainDrawing, graph);
-		drawGBurst(gDrawing, countryAngles, graph);
-	}else{
-		//start looking at average rates for this one - simple fractions and addition won't be informative enough
-		let mainDrawing = bubblesort(mainSort, false);
-		console.log(mainDrawing);
-		let regionAngles = drawRegionBurst(mainDrawing, gSort);
-		//drawGBurst(gDrawing, countryAngles, graph);
-	}
-	
-	
-	//Time for a bunch of D3!  Do the sunburst but with the top 10 and whatnot.  
+	//start looking at average rates for this one - simple fractions and addition won't be informative enough
+	let mainDrawing = bubblesort(mainSort);
+	console.log(mainDrawing);
+	drawRegionBurst(mainDrawing, gSort);
 }
 
 
@@ -493,21 +470,7 @@ const drawCountryLevels = (entries, year, regions, top10) => {
 
 //Remember: 12 for year, 13 for rate, 3 for country, 2 for deaths, 5 for gender
 
-const genderSort = (gSort, bSort) => {
-	let gArr = [];
-	for(item in bSort){
-		gArr.push({});
-		let country = bSort[item][3];
-		for(entry in gSort){
-			if(gSort[entry][3] == country){
-				gArr[item][gSort[entry][5]] = parseFloat(gSort[entry][13]);
-			}
-		}
-	}
-	return gArr;
-}
-
-const bubblesort = (toBeSorted, top10) => {
+const bubblesort = (toBeSorted) => {
 	sorting = true;
 	while(sorting == true){
 		let swaps = 0;
@@ -523,10 +486,6 @@ const bubblesort = (toBeSorted, top10) => {
 			sorting = false;
 		}
 	}
-	if(top10 == true){
-		return [toBeSorted[toBeSorted.length - 1], toBeSorted[toBeSorted.length - 2], toBeSorted[toBeSorted.length - 3], toBeSorted[toBeSorted.length - 4], toBeSorted[toBeSorted.length - 5], toBeSorted[toBeSorted.length - 6], toBeSorted[toBeSorted.length - 7], toBeSorted[toBeSorted.length - 8], toBeSorted[toBeSorted.length - 9], toBeSorted[toBeSorted.length - 10]];
-	}else{
-		return toBeSorted;
-	}
+	return toBeSorted;
 }
 
