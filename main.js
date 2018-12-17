@@ -135,8 +135,19 @@ const drawGBurst = (top10g, angles, graph) =>{
 //Remember: 12 for year, 13 for rate, 3 for country, 2 for deaths, 5 for gender, 16 for region, 17 for subregion
 
 //compare average rates across regions and different rates within countries based on it, take it down to gender level
-const drawRegionBurst = (main, graph) => {
+const drawRegionBurst = (main, gSort) => {
 	let regionRates = {'Sum': 0.0, 'Asia': {'rates': 0, 'number': 0, 'average': 0}, 'Oceania': {'rates': 0, 'number': 0, 'average': 0}, 'Africa': {'rates': 0, 'number': 0, 'average': 0}, 'Europe': {'rates': 0, 'number': 0, 'average': 0}, 'Americas': {'rates': 0, 'number': 0, 'average': 0}}
+	if(document.getElementsByTagName('svg').length > 0){
+		document.getElementsByTagName('svg')[0].remove();
+	}
+	let graph = d3.select(".graph")
+		.append("svg")
+		.attr("width", "500")
+		.attr("height", "500")
+		.append("g")
+		.attr("transform", "translate(250,250)")
+		.attr("class", "circle");
+	
 	for(entry in main){
 		for(region in regionRates){
 			if(region == main[entry][16]){
@@ -152,14 +163,11 @@ const drawRegionBurst = (main, graph) => {
 			regionRates['Sum'] += regionRates[region]['average'];
 		}
 	}
-	let angles = {'Asia': {}, 'Oceania': {}, 'Africa': {}, 'Americas': {}, 'Europe': {}};
-	start = 0;
+	start = 0.0;
 	for(region in regionRates){
 		if(region != 'Sum'){
 			let nextStep = 2 * (regionRates[region]['average']/regionRates['Sum']) * Math.PI;
 			let end = start + nextStep;
-			angles[region]['start'] = start;
-			angles[region]['end'] = end;
 			let arc = d3.arc()
 				.innerRadius(70)
 				.outerRadius(150)
@@ -172,45 +180,258 @@ const drawRegionBurst = (main, graph) => {
 				.attr("fill", "white")
 				.attr('d', arc)
 				.attr('region', region)
-				.on('click', function(d, i){
-					console.log(region);
-					drawSubRegionBurst(main, graph, region);
-				});
+				.attr('value', regionRates[region]['average']);
 
 			start = end;
+
 		}
 	}
+	let portions = document.getElementsByTagName("path");
+	console.log(portions[4].getAttribute('region'));
+	for(let i = 0; i < portions.length; i++){
+		if(i <= 4){
+			portions[i].onmouseenter = function(){
+				document.getElementById("title").innerText = portions[i].getAttribute("region");
+				document.getElementById("value").innerText = 'Average opioid overdose death rate: ' + portions[i].getAttribute('value');
+				for(let x = 0; x < portions.length; x++){
+					portions[x].setAttribute("fill", "white");
+				}
+				portions[i].setAttribute("fill", "red");
+
+			}
+			portions[i].onclick = function(){
+				drawSubRegionBurst(main, portions[i].getAttribute("region"), gSort);
+			}
+		}
+	}
+
 }
 //make the draw subregion thing a click event.  Hell, make all of these click events.
 //make each individual hierarchy clickable.
 
 //Remember: 12 for year, 13 for rate, 3 for country, 2 for deaths, 5 for gender, 16 for region, 17 for subregion
-const drawSubRegionBurst = (main, graph, region) => {
+const drawSubRegionBurst = (main, region, gSort) => {
 	console.log(region);
 	if(document.getElementsByTagName('svg').length > 0){
 		document.getElementsByTagName('svg')[0].remove();
 	}
+	let graph = d3.select(".graph")
+		.append("svg")
+		.attr("width", "500")
+		.attr("height", "500")
+		.append("g")
+		.attr("transform", "translate(250,250)")
+		.attr("class", "circle");
 
 	let subRegions = {};
+	let total = 0.0;
 	for(entry in main){
 		if(main[entry][16] == region){
-			subRegions[main[entry][17]] = {'sum': 0.0, 'num': 0};
-			subRegions[main[entry][17]]['sum'] += main[entry][13];
+			if(!subRegions[main[entry][17]]){
+				subRegions[main[entry][17]] = {'sum': 0.0, 'num': 0, 'avg': 0.0};
+			}
+			subRegions[main[entry][17]]['sum'] += parseFloat(main[entry][13]);
+			total += parseFloat(main[entry][13]);
 			subRegions[main[entry][17]]['num'] += 1;
 		}
 	}
+
 	console.log(subRegions);
 	//loop through main regions, use that to build a new object that counts rates for subregions?
 	
-	debugger;
+	let totAvg = 0.0;
+	for(sub in subRegions){
+		console.log(sub);
+		subRegions[sub]['avg'] = subRegions[sub]['sum'] / subRegions[sub]['num'];
+		totAvg += subRegions[sub]['avg'];
+	}
+
+	let start = 0.0;
+	for(sub in subRegions){
+		let nextStep = 2 * (subRegions[sub]['avg']/totAvg) * Math.PI;
+
+		let end = start + nextStep;
+		console.log(start + ' ' + nextStep + ' ' + end);
+
+		let arc2 = d3.arc()
+			.innerRadius(70)
+			.outerRadius(150)
+			.startAngle(start)
+			.endAngle(end);
+
+		graph.append("path")
+			.attr("class", "arc")
+			.attr("stroke", "black")
+			.attr("fill", "white")
+			.attr('d', arc2)
+			.attr('subregion', sub)
+			.attr('value', subRegions[sub]['avg']);
+
+		
+
+		start = end;
+	}
+
+	let portions = document.getElementsByTagName("path");
+	console.log(portions);
+	for(let i = 0; i < portions.length; i++){
+		portions[i].onmouseenter = function(){
+			document.getElementById("title").innerText = portions[i].getAttribute("subregion");
+			document.getElementById("value").innerText = 'Average opioid overdose death rate: ' + portions[i].getAttribute('value');
+			for(let x = 0; x < portions.length; x++){
+				portions[x].setAttribute("fill", "white");
+			}
+			portions[i].setAttribute("fill", "red");
+		}
+		portions[i].onclick = function(){
+			console.log(portions[i].getAttribute("subregion"));
+			drawCountryBurst(main, portions[i].getAttribute("subregion"), region, gSort);
+			
+		}
+	}
+	let button = document.getElementById("goBack");
+	button.onclick = function(){
+		drawRegionBurst(main, region, gSort);
+	}
 }
 
-const drawCountryBurst = () => {
+const drawCountryBurst = (main, sub, gSort) => {
+	if(document.getElementsByTagName('svg').length > 0){
+		document.getElementsByTagName('svg')[0].remove();
+	}
+	let graph = d3.select(".graph")
+		.append("svg")
+		.attr("width", "500")
+		.attr("height", "500")
+		.append("g")
+		.attr("transform", "translate(250,250)")
+		.attr("class", "circle");
+
+	let countries = {};
+	let num = 0;
+	let totAvg = 0.0;
+	for(entry in main){
+		if(main[entry][17] == sub){
+			console.log(main[entry][3]);
+			if(!countries[main[entry][3]]){
+				countries[main[entry][3]] = {'avg': 0.0};
+				
+			}
+			countries[main[entry][3]]['avg'] += parseFloat(main[entry][13]);
+			console.log(countries[main[entry][3]]);
+			totAvg += parseFloat(main[entry][13]);
+		}
+	}
+
+	let start = 0;
+	for(country in countries){
+		let nextStep = 2 * (countries[country]['avg']/totAvg) * Math.PI;
+
+		let end = start + nextStep;
+		console.log(start + ' ' + nextStep + ' ' + end);
+
+		let arc = d3.arc()
+			.innerRadius(70)
+			.outerRadius(150)
+			.startAngle(start)
+			.endAngle(end);
+
+		graph.append()
+
+		graph.append("path")
+			.attr("class", "arc")
+			.attr("stroke", "black")
+			.attr("fill", "white")
+			.attr('d', arc)
+			.attr('country', country)
+			.attr('value', countries[country]['avg']);
+
+		start = end;
+	}
+
+	graph.append("circle")
+		.attr("cx", 500)
+		.attr("cy", 500)
+		.attr("r", 35)
+		.attr("class", "inCircle")
+		.attr("up", sub);
+
+
+	let portions = document.getElementsByTagName("path");
+	console.log(portions);
+	for(let i = 0; i < portions.length; i++){
+		portions[i].onmouseenter = function(){
+			document.getElementById("title").innerText = portions[i].getAttribute("country");
+			document.getElementById("value").innerText = 'Average opioid overdose death rate: ' + portions[i].getAttribute('value');
+			for(let x = 0; x < portions.length; x++){
+				portions[x].setAttribute("fill", "white");
+			}
+			portions[i].setAttribute("fill", "red");
+		}
+		portions[i].onclick = function(){
+			console.log(portions[i].getAttribute("country"));
+			drawGenderBurst2(main, portions[i].getAttribute("country"), sub, gSort);
+		}
+	}
+	let button = document.getElementById("goBack");
+	button.onclick = function(){
+		drawSubRegionBurst(main, region, gSort);
+	}
 
 }
 
-const drawGenderLevels = (entries, year, regions) => {
-	let mainSort = [];
+const drawGenderBurst2 = (main, country, sub, gSort) => {
+	if(document.getElementsByTagName('svg').length > 0){
+		document.getElementsByTagName('svg')[0].remove();
+	}
+	let graph = d3.select(".graph")
+		.append("svg")
+		.attr("width", "500")
+		.attr("height", "500")
+		.append("g")
+		.attr("transform", "translate(250,250)")
+		.attr("class", "circle");
+
+	let genders = {'Male': 0.0, 'Female': 0.0};
+	let avg = 0.0;
+	for(entry in gSort){
+		if(gSort[entry][3] == country && gSort[entry][5] == 'Male'){
+			genders['Male'] = parseFloat(gSort[entry][13]);
+		}else if(gSort[entry][3] == country && gSort[entry][5] == 'Female'){
+			genders['Female'] = parseFloat(gSort[entry][13]);
+		}
+	}
+	console.log(genders);
+	avg = (genders['Male'] + genders['Female']) / 2;
+	let start = 0;
+	for(gender in genders){
+		let nextStep = 2 * (genders[gender]/avg) * Math.PI;
+
+		let end = start + nextStep;
+		console.log(start + ' ' + nextStep + ' ' + end);
+
+		let arc = d3.arc()
+			.innerRadius(70)
+			.outerRadius(150)
+			.startAngle(start)
+			.endAngle(end);
+
+		graph.append("path")
+			.attr("class", "arc")
+			.attr("stroke", "black")
+			.attr("fill", "white")
+			.attr('d', arc)
+			.attr('country', country);
+
+		
+
+		start = end;
+	}
+	let button = document.getElementById("goBack");
+	button.onclick = function(){
+		drawCountryBurst(main, sub, gSort);
+	}
+	
 }
 
 //Starting with a main level of top 10 countries, with sublevels broken down based on gender
@@ -237,15 +458,18 @@ const drawCountryLevels = (entries, year, regions, top10) => {
 		}
 	}
 
-	let graph = d3.select(".graph")
-		.append("svg")
-		.attr("width", "1000")
-		.attr("height", "1000")
-		.append("g")
-		.attr("transform", "translate(500,500)");
+	
 
 	if(top10 == true){
 		//make a box for "rest of the world"?
+		let graph = d3.select(".graph")
+			.append("svg")
+			.attr("width", "500")
+			.attr("height", "500")
+			.append("g")
+			.attr("transform", "translate(250,250)")
+			.attr("class", "circle");
+
 		let mainDrawing = bubblesort(mainSort, true);
 		let gDrawing = genderSort(gSort, mainDrawing);
 		let countryAngles = drawTop10Burst(mainDrawing, graph);
@@ -254,7 +478,7 @@ const drawCountryLevels = (entries, year, regions, top10) => {
 		//start looking at average rates for this one - simple fractions and addition won't be informative enough
 		let mainDrawing = bubblesort(mainSort, false);
 		console.log(mainDrawing);
-		let regionAngles = drawRegionBurst(mainDrawing, graph);
+		let regionAngles = drawRegionBurst(mainDrawing, gSort);
 		//drawGBurst(gDrawing, countryAngles, graph);
 	}
 	
