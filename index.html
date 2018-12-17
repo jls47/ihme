@@ -9,10 +9,11 @@
   </head>
   <body>
     <div class="input">
-      <p>I'd like to see top rates of opiate deaths by 
+      <p>I'd like to see rates of opiate deaths 
         <select class="options">
-          <option value="country">country</option>
-          <option value="gender">gender</option>
+          <option value="country">by top affected nations</option>
+          <option value="gender">by gender</option>
+          <option value="worldwide">worldwide</option>
         </select>
         during the year <input type="text" name="year" class="year">.
       </p>
@@ -24,6 +25,5 @@
   </body>
   <script src="d3.v5.min.js"></script>
   <script src="jquery-min.js"></script>
-  <script type="module" src="countryidentifiers.js"></script>
   <script src="main.js"></script>
  </html>
