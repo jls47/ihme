@@ -170,17 +170,38 @@ const drawRegionBurst = (main, graph) => {
 				.attr("class", "arc")
 				.attr("stroke", "black")
 				.attr("fill", "white")
-				.attr('d', arc);
+				.attr('d', arc)
+				.attr('region', region)
+				.on('click', function(d, i){
+					console.log(region);
+					drawSubRegionBurst(main, graph, region);
+				});
 
 			start = end;
 		}
 	}
-	return angles;
 }
+//make the draw subregion thing a click event.  Hell, make all of these click events.
+//make each individual hierarchy clickable.
 
-const drawSubRegionBurst = (main, graph, angles) => {
-	console.log(angles);
-	console.log(main);
+//Remember: 12 for year, 13 for rate, 3 for country, 2 for deaths, 5 for gender, 16 for region, 17 for subregion
+const drawSubRegionBurst = (main, graph, region) => {
+	console.log(region);
+	if(document.getElementsByTagName('svg').length > 0){
+		document.getElementsByTagName('svg')[0].remove();
+	}
+
+	let subRegions = {};
+	for(entry in main){
+		if(main[entry][16] == region){
+			subRegions[main[entry][17]] = {'sum': 0.0, 'num': 0};
+			subRegions[main[entry][17]]['sum'] += main[entry][13];
+			subRegions[main[entry][17]]['num'] += 1;
+		}
+	}
+	console.log(subRegions);
+	//loop through main regions, use that to build a new object that counts rates for subregions?
+	
 	debugger;
 }
 
@@ -234,9 +255,6 @@ const drawCountryLevels = (entries, year, regions, top10) => {
 		let mainDrawing = bubblesort(mainSort, false);
 		console.log(mainDrawing);
 		let regionAngles = drawRegionBurst(mainDrawing, graph);
-		let subRegionAngles = drawSubRegionBurst(mainDrawing, graph, regionAngles);
-		let countryAngles = drawCountryBurst(mainDrawing, regionAngles, graph);
-		let gDrawing = genderSort(gSort, mainDrawing);
 		//drawGBurst(gDrawing, countryAngles, graph);
 	}
 	
