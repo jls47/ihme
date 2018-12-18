@@ -318,25 +318,23 @@ const drawCountryBurst = (main, sub, region, gSort) => {
 				
 			}
 			countries[main[entry][3]]['avg'] += parseFloat(main[entry][13]);
-			console.log(countries[main[entry][3]]);
 			totAvg += parseFloat(main[entry][13]);
 		}
 	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	let start = 0;
 	for(country in countries){
 		let nextStep = 2 * (countries[country]['avg']/totAvg) * Math.PI;
 
 		let end = start + nextStep;
-		console.log(start + ' ' + nextStep + ' ' + end);
 
 		let arc = d3.arc()
 			.innerRadius(70)
 			.outerRadius(150)
 			.startAngle(start)
 			.endAngle(end);
-
-		graph.append()
 
 		graph.append("path")
 			.attr("class", "arc")
@@ -346,15 +344,10 @@ const drawCountryBurst = (main, sub, region, gSort) => {
 			.attr('country', country)
 			.attr('value', countries[country]['avg']);
 
+		drawCircle('country', country);
+
 		start = end;
 	}
-
-	graph.append("circle")
-		.attr("cx", 500)
-		.attr("cy", 500)
-		.attr("r", 35)
-		.attr("class", "inCircle")
-		.attr("up", sub);
 
 
 	let portions = document.getElementsByTagName("path");
@@ -396,35 +389,24 @@ const drawGenderBurst2 = (main, country, sub, region, gSort) => {
 	let avg = 0.0;
 	for(entry in gSort){
 		if(gSort[entry][3] == country && gSort[entry][5] == 'Male'){
+			console.log(gSort[entry])
 			genders['Male'] = parseFloat(gSort[entry][13]);
 		}else if(gSort[entry][3] == country && gSort[entry][5] == 'Female'){
+			console.log(gSort[entry])
 			genders['Female'] = parseFloat(gSort[entry][13]);
 		}
 	}
 	console.log(genders);
-	avg = (genders['Male'] + genders['Female']) / 2;
+	total = (genders['Male'] + genders['Female']);
+	console.log(avg);
 	let start = 0;
 	for(gender in genders){
-		let nextStep = 2 * (genders[gender]/avg) * Math.PI;
+		let nextStep = 2 * (genders[gender]/total) * Math.PI;
 
 		let end = start + nextStep;
 		console.log(start + ' ' + nextStep + ' ' + end);
 
-		let arc = d3.arc()
-			.innerRadius(70)
-			.outerRadius(150)
-			.startAngle(start)
-			.endAngle(end);
-
-		graph.append("path")
-			.attr("class", "arc")
-			.attr("stroke", "black")
-			.attr("fill", "white")
-			.attr('d', arc)
-			.attr('country', country);
-
-		
-
+		drawCircle('country', country);
 		start = end;
 	}
 	let button = document.getElementById("goBack");
@@ -432,6 +414,21 @@ const drawGenderBurst2 = (main, country, sub, region, gSort) => {
 		drawCountryBurst(main, sub, region, gSort);
 	}
 	
+}
+
+const drawCircle = (attrname, attr) => {
+	let arc = d3.arc()
+		.innerRadius(70)
+		.outerRadius(150)
+		.startAngle(start)
+		.endAngle(end);
+
+	graph.append("path")
+		.attr("class", "arc")
+		.attr("stroke", "black")
+		.attr("fill", "white")
+		.attr('d', arc)
+		.attr(attrname, attr);
 }
 
 //Starting with a main level of top 10 countries, with sublevels broken down based on gender
