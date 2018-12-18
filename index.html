@@ -9,7 +9,11 @@
   </head>
   <body>
     <div class="input">
-      <p>I'd like to see rates of opiate deaths worldwide
+      <p>I'd like to see rates of opiate deaths 
+        <select id = "top10">
+          <option value="worldwide">worldwide</option>
+          <option value="top10">in the top 10 most affected countries</option>
+        </select>
         during the year <input type="text" name="year" class="year">.
       </p>
       <button type="button" class="button">Submit</button>
@@ -23,6 +27,7 @@
 
   	<div class="graph"></div>
     <div class="goBack">
+      <h3 id = "current"></h3>
       <button type="button" id="goBack">Go back up</button>
     </div>
 
